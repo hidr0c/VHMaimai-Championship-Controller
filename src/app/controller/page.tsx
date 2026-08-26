@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Song } from '../interface';
 import { emitGameEvent, getSocket, onGameEvent } from '../lib/socketClient';
 
@@ -40,6 +41,8 @@ const ensureIds = (songs: any[]): Song[] => {
 };
 
 export default function ControllerPage() {
+    const router = useRouter();
+
     // Settings state
     const [selectedPool, setSelectedPool] = useState('newbieSemi');
     const [songData, setSongData] = useState<Song[]>([]);
@@ -132,17 +135,18 @@ export default function ControllerPage() {
         const savedFixedSongs = localStorage.getItem('fixedSongs');
         const savedLockedTracks = localStorage.getItem('lockedTracks');
         const savedHiddenTracks = localStorage.getItem('hiddenTracks');
-
+        
         if (savedPool && POOL_FILES[savedPool]) {
             setSelectedPool(savedPool);
         }
+        
         if (savedRandomCount) setRandomCount(parseInt(savedRandomCount));
         if (savedPickCount) setPickCount(parseInt(savedPickCount));
         if (savedBanCount) setBanCount(parseInt(savedBanCount));
         if (savedFixedSongs) setFixedSongs(JSON.parse(savedFixedSongs));
         if (savedLockedTracks) setLockedTracks(JSON.parse(savedLockedTracks));
         if (savedHiddenTracks) setHiddenTracks(JSON.parse(savedHiddenTracks));
-
+        
         // Load ban/pick log
         const savedBanPickLog = localStorage.getItem('banPickLog');
         if (savedBanPickLog) setBanPickLog(JSON.parse(savedBanPickLog));
@@ -491,6 +495,7 @@ export default function ControllerPage() {
 
     // Auto-save when settings change
     useEffect(() => {
+        console.log(lockedTracks);
         saveSettings();
     }, [selectedPool, randomCount, pickCount, banCount, fixedSongs, lockedTracks, hiddenTracks]);
 
@@ -941,7 +946,7 @@ export default function ControllerPage() {
                                         isBanPhase ? 'text-red-400' :
                                             randomResults.length > 0 ? 'text-yellow-400' :
                                                 'text-gray-400'
-                                    }`}>
+                                }`}>
                                     {showFinalResults ? 'Complete' :
                                         isPickPhase ? `Pick Phase (${remainingPicks} left)` :
                                             isBanPhase ? `Ban Phase (${remainingBans} left)` :
@@ -1060,11 +1065,11 @@ export default function ControllerPage() {
                                                 }}
                                                 disabled={!showBanPick || processed}
                                                 className={`p-2 rounded-lg text-left transition-all ${index === selectedSongIndex && !processed ? 'ring-2 ring-yellow-400' : ''
-                                                    } ${banned ? 'bg-red-900/50 opacity-50' :
-                                                        picked ? 'bg-green-900/50 border-2 border-green-500' :
-                                                            showBanPick ? 'bg-gray-700 hover:bg-gray-600 cursor-pointer' :
-                                                                'bg-gray-700'
-                                                    }`}
+                                                } ${banned ? 'bg-red-900/50 opacity-50' :
+                                                    picked ? 'bg-green-900/50 border-2 border-green-500' :
+                                                        showBanPick ? 'bg-gray-700 hover:bg-gray-600 cursor-pointer' :
+                                                            'bg-gray-700'
+                                                }`}
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <img
@@ -1077,7 +1082,7 @@ export default function ControllerPage() {
                                                         <p className={`text-xs ${song.diff === 'MASTER' ? 'text-purple-400' :
                                                             song.diff === 'EXPERT' ? 'text-red-400' :
                                                                 'text-pink-400'
-                                                            }`}>
+                                                        }`}>
                                                             {song.diff} {song.lv}
                                                         </p>
                                                     </div>
@@ -1253,7 +1258,20 @@ export default function ControllerPage() {
                                                     setShowTrack3Dropdown(false);
                                                 }}
                                             >
-                                                <span className="text-red-400">✕</span> Clear selection
+                                                <span className="text-red-400">X</span> Clear selection
+                                            </div>
+                                            {/* This is for random button */}
+                                            <div
+                                                className="px-3 py-2 cursor-pointer hover:bg-purple-600 text-gray-400 flex items-center gap-2"
+                                                onClick={() => {
+                                                    setShowTrack3Dropdown(false);
+                                                    localStorage.setItem('lockedTrackTarget', 'track3');
+                                                    // A locked track was marked -> hand off to the
+                                                    // random-locked-song page.
+                                                    router.push('/random-locked-song');
+                                                }}
+                                            >
+                                                <span className="text-gray-400">?</span>  Get Random
                                             </div>
                                             {track3Options.slice(0, 20).map((song) => (
                                                 <div
@@ -1311,6 +1329,18 @@ export default function ControllerPage() {
                                                 }}
                                             >
                                                 <span className="text-red-400">✕</span> Clear selection
+                                            </div>
+                                            <div
+                                                className="px-3 py-2 cursor-pointer hover:bg-purple-600 text-gray-400 flex items-center gap-2"
+                                                onClick={() => {
+                                                    setShowTrack4Dropdown(false);
+                                                    localStorage.setItem('lockedTrackTarget', 'track4');
+                                                    // A locked track was marked -> hand off to the
+                                                    // random-locked-song page.
+                                                    router.push('/random-locked-song');
+                                                }}
+                                            >
+                                                <span className="text-gray-400">?</span>  Get Random
                                             </div>
                                             {track4Options.slice(0, 20).map((song) => (
                                                 <div
